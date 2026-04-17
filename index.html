@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>4 Deployment Platforms Compared · Canine vs Coolify vs Dokploy vs Railway (2026)</title>
+<style>
+  :root{
+    --bg:#06060c;
+    --surface:rgba(255,255,255,0.035);
+    --surface-2:rgba(255,255,255,0.07);
+    --border:rgba(255,255,255,0.08);
+    --text:#ECECF1;
+    --text-dim:#9B9BAD;
+    --text-dim-2:#6B6B7E;
+
+    /* Brand colors per option */
+    --c1:#7C5CFF;  /* Canine */
+    --c1-2:#22D3EE;
+    --c2:#8B5CF6;  /* Coolify */
+    --c2-2:#06B6D4;
+    --c3:#F472B6;  /* Dokploy */
+    --c3-2:#FB7185;
+    --c4:#34D399;  /* Railway */
+    --c4-2:#60A5FA;
+
+    --success:#34D399;
+    --warn:#FBBF24;
+    --danger:#F87171;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;scroll-behavior:smooth}
+  body{
+    font-family:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:
+      radial-gradient(1200px 700px at 10% -10%, rgba(124,92,255,.18), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(6,182,212,.14), transparent 60%),
+      radial-gradient(800px 600px at 50% 120%, rgba(244,114,182,.12), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .shell{max-width:1280px;margin:0 auto;padding:28px 22px 90px}
+
+  /* NAV */
+  nav.top{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 18px;border:1px solid var(--border);border-radius:999px;
+    background:rgba(10,10,18,.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    position:sticky;top:14px;z-index:50;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+  .logo{
+    width:30px;height:30px;border-radius:9px;
+    background:linear-gradient(135deg,#8B5CF6,#22D3EE);
+    display:grid;place-items:center;color:#06060c;font-weight:900;
+    box-shadow:0 0 24px rgba(139,92,246,.55)
+  }
+  .pill{font-size:12px;color:var(--text-dim);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:var(--surface)}
+
+  /* HERO */
+  header.hero{margin-top:44px;text-align:center}
+  .badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--surface);padding:8px 14px;border-radius:999px;font-size:12px;color:var(--text-dim)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 12px var(--success)}
+  h1{
+    font-size:clamp(34px,5.5vw,62px);line-height:1.02;letter-spacing:-0.025em;margin:18px 0 14px;
+    background:linear-gradient(180deg,#fff 0%, #b8b8c8 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent
+  }
+  .sub{color:var(--text-dim);max-width:760px;margin:0 auto;font-size:17px;line-height:1.6}
+
+  /* Option cards */
+  .options-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px}
+  .opt-card{
+    border:1px solid var(--border);border-radius:var(--radius);padding:22px;
+    background:linear-gradient(180deg,var(--surface-2),var(--surface));
+    cursor:pointer;transition:all .25s ease;position:relative;overflow:hidden
+  }
+  .opt-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.18)}
+  .opt-card::before{
+    content:"";position:absolute;inset:0;border-radius:var(--radius);pointer-events:none;
+    background:radial-gradient(600px 200px at 0% 0%,var(--glow,transparent),transparent 60%);
+    opacity:.5;transition:opacity .25s
+  }
+  .opt-card:hover::before{opacity:.9}
+  .opt-card.active{border-color:transparent;box-shadow:0 20px 50px var(--shadow,rgba(139,92,246,.25))}
+  .opt-card[data-opt="1"]{--glow:rgba(124,92,255,.35);--shadow:rgba(124,92,255,.35)}
+  .opt-card[data-opt="2"]{--glow:rgba(139,92,246,.35);--shadow:rgba(139,92,246,.35)}
+  .opt-card[data-opt="3"]{--glow:rgba(244,114,182,.35);--shadow:rgba(244,114,182,.35)}
+  .opt-card[data-opt="4"]{--glow:rgba(52,211,153,.35);--shadow:rgba(52,211,153,.35)}
+  .opt-card.active[data-opt="1"]{background:linear-gradient(135deg,rgba(124,92,255,.2),rgba(34,211,238,.15))}
+  .opt-card.active[data-opt="2"]{background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(6,182,212,.15))}
+  .opt-card.active[data-opt="3"]{background:linear-gradient(135deg,rgba(244,114,182,.2),rgba(251,113,133,.15))}
+  .opt-card.active[data-opt="4"]{background:linear-gradient(135deg,rgba(52,211,153,.2),rgba(96,165,250,.15))}
+
+  .opt-num{font-size:11px;color:var(--text-dim);letter-spacing:.6px;text-transform:uppercase;font-weight:600}
+  .opt-icon{font-size:32px;margin:10px 0 6px}
+  .opt-name{font-size:22px;font-weight:800;letter-spacing:-.02em}
+  .opt-tag{color:var(--text-dim);font-size:13px;margin-top:6px;line-height:1.5}
+  .opt-stats{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .opt-stat{font-size:11px;padding:4px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim)}
+
+  /* Option section */
+  section.opt-section{display:none;margin-top:50px;scroll-margin-top:100px}
+  section.opt-section.show{display:block;animation:fadeIn .4s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .opt-hero{
+    border:1px solid var(--border);border-radius:22px;padding:30px;margin-bottom:20px;
+    position:relative;overflow:hidden
+  }
+  .opt-hero[data-opt="1"]{background:linear-gradient(135deg,rgba(124,92,255,.18),rgba(34,211,238,.08))}
+  .opt-hero[data-opt="2"]{background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(6,182,212,.08))}
+  .opt-hero[data-opt="3"]{background:linear-gradient(135deg,rgba(244,114,182,.18),rgba(251,113,133,.08))}
+  .opt-hero[data-opt="4"]{background:linear-gradient(135deg,rgba(52,211,153,.18),rgba(96,165,250,.08))}
+  .opt-hero h2{font-size:36px;font-weight:800;letter-spacing:-.02em;margin-top:8px}
+  .opt-hero p{color:var(--text-dim);margin-top:10px;max-width:760px;font-size:15.5px;line-height:1.6}
+
+  /* Section cards */
+  .bento{display:grid;gap:16px;grid-template-columns:repeat(12,1fr);margin-top:18px}
+  .card{
+    background:linear-gradient(180deg,var(--surface-2),var(--surface));
+    border:1px solid var(--border);border-radius:var(--radius);padding:22px;
+    position:relative;overflow:hidden
+  }
+  .card h3{font-size:12px;color:var(--text-dim);font-weight:600;margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase}
+  .card .big{font-size:26px;font-weight:700;letter-spacing:-.02em}
+  .span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+
+  /* Timeline */
+  .tl-row{display:flex;gap:16px;padding:18px 0;border-bottom:1px dashed var(--border)}
+  .tl-row:last-child{border-bottom:0}
+  .tl-num{flex-shrink:0;width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-weight:800;color:#06060c}
+  .opt-section[data-opt="1"] .tl-num{background:linear-gradient(135deg,var(--c1),var(--c1-2))}
+  .opt-section[data-opt="2"] .tl-num{background:linear-gradient(135deg,var(--c2),var(--c2-2))}
+  .opt-section[data-opt="3"] .tl-num{background:linear-gradient(135deg,var(--c3),var(--c3-2))}
+  .opt-section[data-opt="4"] .tl-num{background:linear-gradient(135deg,var(--c4),var(--c4-2))}
+  .tl-content{flex:1;min-width:0}
+  .tl-title{font-size:16px;font-weight:700}
+  .tl-desc{color:var(--text-dim);font-size:13.5px;margin:4px 0 10px;line-height:1.55}
+
+  /* Code */
+  pre.code{
+    background:#0a0a14;border:1px solid var(--border);border-radius:12px;padding:14px;
+    overflow:auto;font-size:12.5px;line-height:1.55;color:#d7d7ea;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace
+  }
+  .k{color:#c4b5fd}.s{color:#86efac}.c{color:#64748b}.n{color:#fca5a5}.b{color:#f9a8d4}
+  code{font-family:ui-monospace,monospace;font-size:12.5px;background:var(--surface-2);padding:2px 6px;border-radius:5px}
+
+  /* Pros/Cons */
+  .pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  @media(max-width:860px){.pc-grid{grid-template-columns:1fr}}
+  .pc-card{padding:16px;border-radius:14px;border:1px solid var(--border)}
+  .pc-good{background:rgba(52,211,153,.06);border-color:rgba(52,211,153,.22)}
+  .pc-bad{background:rgba(248,113,113,.06);border-color:rgba(248,113,113,.22)}
+  .pc-card .ttl{font-weight:700;font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .pc-good .ttl{color:var(--success)}
+  .pc-bad .ttl{color:var(--danger)}
+  .pc-card ul{list-style:none}
+  .pc-card li{padding:7px 0;font-size:13.5px;color:var(--text-dim);display:flex;gap:8px;line-height:1.5}
+  .pc-card li::before{flex-shrink:0}
+  .pc-good li::before{content:"✓";color:var(--success);font-weight:700}
+  .pc-bad li::before{content:"✗";color:var(--danger);font-weight:700}
+
+  /* When to use */
+  .use-card{padding:18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);margin-top:14px}
+  .use-card .ttl{font-weight:700;margin-bottom:10px;font-size:15px;display:flex;align-items:center;gap:8px}
+  .use-list{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+  @media(max-width:860px){.use-list{grid-template-columns:1fr}}
+  .use-item{padding:12px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);font-size:13.5px;color:var(--text-dim);line-height:1.5}
+  .use-item strong{color:var(--text)}
+
+  /* Demo preview */
+  .demo-frame{
+    border:1px solid var(--border);border-radius:14px;overflow:hidden;
+    background:linear-gradient(180deg,#0a0a14,#06060c)
+  }
+  .browser-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#0f0f1b;border-bottom:1px solid var(--border)}
+  .browser-bar .dots{display:flex;gap:6px}
+  .browser-bar .dots span{width:10px;height:10px;border-radius:50%;background:#2a2a3a}
+  .browser-bar .url{flex:1;background:#17172a;border-radius:8px;padding:6px 12px;font-family:ui-monospace,monospace;font-size:12px;color:var(--text-dim)}
+  .demo-body{padding:18px}
+
+  /* Dashboard */
+  .dash{display:grid;grid-template-columns:200px 1fr;gap:14px;min-height:340px}
+  .side{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
+  .side .item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--text-dim);font-size:13px;cursor:pointer}
+  .side .item.active{background:var(--surface-2);color:var(--text)}
+  .side .item i{width:8px;height:8px;border-radius:50%;background:var(--text-dim)}
+  .mainp{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+  .status-p{display:inline-flex;gap:8px;align-items:center;padding:5px 10px;border-radius:999px;background:rgba(52,211,153,.12);color:var(--success);font-size:12px;border:1px solid rgba(52,211,153,.25)}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+  .mini{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px}
+  .mini .lbl{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px}
+  .mini .val{font-size:18px;font-weight:700;margin-top:4px}
+  .logs{background:#0a0a14;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,monospace;font-size:11.5px;color:#c5c5d8;height:110px;overflow:auto}
+
+  /* Decision matrix */
+  table.compare{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+  table.compare th,table.compare td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+  table.compare thead th{color:var(--text-dim);font-weight:600;font-size:12px;letter-spacing:.4px;text-transform:uppercase}
+  table.compare td:first-child{color:var(--text-dim);width:24%}
+  .t-canine{color:var(--c1);font-weight:600}
+  .t-coolify{color:var(--c2);font-weight:600}
+  .t-dokploy{color:var(--c3);font-weight:600}
+  .t-railway{color:var(--c4);font-weight:600}
+
+  /* Walkthrough steps */
+  .wt-rail{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}
+  .wt-step{border:1px solid var(--border);border-radius:12px;padding:10px;background:var(--surface);cursor:pointer;transition:all .2s}
+  .wt-step:hover{transform:translateY(-2px)}
+  .wt-step .wn{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:var(--surface-2);font-weight:700;font-size:12px;margin-bottom:6px;color:var(--text)}
+  .wt-step .wt{font-weight:600;font-size:12.5px;line-height:1.3}
+  .wt-step .wd{color:var(--text-dim);font-size:11px;margin-top:3px;line-height:1.35}
+  .opt-section[data-opt="1"] .wt-step.active{border-color:transparent;background:linear-gradient(135deg,rgba(124,92,255,.25),rgba(34,211,238,.18));box-shadow:0 8px 20px rgba(124,92,255,.22)}
+  .opt-section[data-opt="1"] .wt-step.active .wn{background:linear-gradient(135deg,var(--c1),var(--c1-2));color:#06060c}
+  .opt-section[data-opt="2"] .wt-step.active{border-color:transparent;background:linear-gradient(135deg,rgba(139,92,246,.25),rgba(6,182,212,.18));box-shadow:0 8px 20px rgba(139,92,246,.22)}
+  .opt-section[data-opt="2"] .wt-step.active .wn{background:linear-gradient(135deg,var(--c2),var(--c2-2));color:#06060c}
+  .opt-section[data-opt="3"] .wt-step.active{border-color:transparent;background:linear-gradient(135deg,rgba(244,114,182,.25),rgba(251,113,133,.18));box-shadow:0 8px 20px rgba(244,114,182,.22)}
+  .opt-section[data-opt="3"] .wt-step.active .wn{background:linear-gradient(135deg,var(--c3),var(--c3-2));color:#06060c}
+  .opt-section[data-opt="4"] .wt-step.active{border-color:transparent;background:linear-gradient(135deg,rgba(52,211,153,.25),rgba(96,165,250,.18));box-shadow:0 8px 20px rgba(52,211,153,.22)}
+  .opt-section[data-opt="4"] .wt-step.active .wn{background:linear-gradient(135deg,var(--c4),var(--c4-2));color:#06060c}
+  .wt-scene{margin-top:14px;border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--surface);min-height:320px}
+  .wt-panel{display:none;animation:fadeIn .35s ease}
+  .wt-panel.show{display:block}
+  .wt-h{font-size:17px;font-weight:700;margin-bottom:6px}
+  .wt-p{color:var(--text-dim);font-size:13.5px;margin-bottom:12px;line-height:1.55}
+  .wt-controls{display:flex;justify-content:space-between;margin-top:14px;gap:10px}
+  .wt-btn{padding:9px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-weight:600;font-size:13px}
+  .opt-section[data-opt="1"] .wt-btn.primary{background:linear-gradient(135deg,var(--c1),var(--c1-2));color:#06060c;border:0}
+  .opt-section[data-opt="2"] .wt-btn.primary{background:linear-gradient(135deg,var(--c2),var(--c2-2));color:#06060c;border:0}
+  .opt-section[data-opt="3"] .wt-btn.primary{background:linear-gradient(135deg,var(--c3),var(--c3-2));color:#06060c;border:0}
+  .opt-section[data-opt="4"] .wt-btn.primary{background:linear-gradient(135deg,var(--c4),var(--c4-2));color:#06060c;border:0}
+  .wt-btn:disabled{opacity:.35;cursor:not-allowed}
+  .wt-field{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);margin-top:4px;font-size:13.5px}
+  .wt-label{font-size:11.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px}
+  .wt-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:700px){.wt-row{grid-template-columns:1fr}.wt-rail{grid-template-columns:repeat(2,1fr)}}
+  .svc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  @media(max-width:700px){.svc-grid{grid-template-columns:repeat(2,1fr)}}
+  .svc-cell{padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);text-align:center;font-size:12.5px}
+  .svc-cell.picked{background:linear-gradient(135deg,rgba(139,92,246,.22),rgba(6,182,212,.15));border-color:transparent}
+  .svc-cell .ic{font-size:20px;margin-bottom:4px}
+
+  footer{color:var(--text-dim);text-align:center;margin-top:60px;font-size:13px}
+  a{color:#22D3EE;text-decoration:none}
+
+  @media(max-width:900px){
+    .options-grid{grid-template-columns:repeat(2,1fr)}
+    .span-3,.span-4,.span-6,.span-8{grid-column:span 12}
+    .dash{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- NAV -->
+  <nav class="top">
+    <div class="brand">
+      <div class="logo">🚀</div>
+      <span>4 Platforms · Side-by-Side</span>
+      <span class="pill">Setup · Demo · Pros & Cons</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a href="#option1" style="padding:8px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600">Canine</a>
+      <a href="#option2" style="padding:8px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600">Coolify</a>
+      <a href="#option3" style="padding:8px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600">Dokploy</a>
+      <a href="#option4" style="padding:8px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600">Railway</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="badge"><span class="dot"></span> 4-way platform showdown · 2026 edition</div>
+    <h1>Canine · Coolify · Dokploy · Railway<br/>Full setup & demo for each</h1>
+    <p class="sub">Each option covers: what it is, full step-by-step setup, a real-world demo, advantages, disadvantages, and exactly <em>when</em> to pick it. Click any card below to jump to that option.</p>
+  </header>
+
+  <!-- OPTION CARDS OVERVIEW -->
+  <div class="options-grid" id="optionsGrid">
+    <div class="opt-card active" data-opt="1" onclick="selectOption(1)">
+      <div class="opt-num">Option 1</div>
+      <div class="opt-icon">🐶</div>
+      <div class="opt-name">Canine</div>
+      <div class="opt-tag">Self-hosted PaaS for Kubernetes. Clean UI over kubectl.</div>
+      <div class="opt-stats">
+        <span class="opt-stat">K8s-native</span>
+        <span class="opt-stat">Apache 2.0</span>
+        <span class="opt-stat">Ruby</span>
+      </div>
+    </div>
+    <div class="opt-card" data-opt="2" onclick="selectOption(2)">
+      <div class="opt-num">Option 2</div>
+      <div class="opt-icon">⚡</div>
+      <div class="opt-name">Coolify</div>
+      <div class="opt-tag">Self-hosted Heroku alternative on plain Docker. 280+ one-click services.</div>
+      <div class="opt-stats">
+        <span class="opt-stat">Docker</span>
+        <span class="opt-stat">Apache 2.0</span>
+        <span class="opt-stat">Most popular</span>
+      </div>
+    </div>
+    <div class="opt-card" data-opt="3" onclick="selectOption(3)">
+      <div class="opt-num">Option 3</div>
+      <div class="opt-icon">🦕</div>
+      <div class="opt-name">Dokploy</div>
+      <div class="opt-tag">Modern, polished self-hosted PaaS. Docker Swarm under the hood.</div>
+      <div class="opt-stats">
+        <span class="opt-stat">Docker Swarm</span>
+        <span class="opt-stat">MIT</span>
+        <span class="opt-stat">Best UX</span>
+      </div>
+    </div>
+    <div class="opt-card" data-opt="4" onclick="selectOption(4)">
+      <div class="opt-num">Option 4</div>
+      <div class="opt-icon">🚂</div>
+      <div class="opt-name">Railway</div>
+      <div class="opt-tag">Fully managed cloud. Zero servers to maintain. Push git → live.</div>
+      <div class="opt-stats">
+        <span class="opt-stat">Managed</span>
+        <span class="opt-stat">Paid</span>
+        <span class="opt-stat">Fastest DX</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================== OPTION 1: CANINE =============================== -->
+  <section class="opt-section show" data-opt="1" id="option1">
+    <div class="opt-hero" data-opt="1">
+      <div class="opt-num" style="font-size:12px;color:var(--text-dim);letter-spacing:.6px;text-transform:uppercase;font-weight:600">Option 1 · Most Kubernetes-native</div>
+      <h2>🐶 Canine</h2>
+      <p>A self-hosted PaaS that puts a clean, friendly UI on top of Kubernetes. It doesn't replace K8s — it makes it humane. Best for teams already committed to Kubernetes who want to stop writing YAML by hand.</p>
+    </div>
+
+    <!-- What it is -->
+    <div class="bento">
+      <div class="card span-4">
+        <h3>Underlying engine</h3>
+        <div class="big">Kubernetes</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Needs an existing K8s cluster (k3s, EKS, GKE, AKS, or DigitalOcean).</p>
+      </div>
+      <div class="card span-4">
+        <h3>Setup time</h3>
+        <div class="big">~20 min</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Including K8s cluster setup. Canine itself takes ~5 min.</p>
+      </div>
+      <div class="card span-4">
+        <h3>Monthly cost</h3>
+        <div class="big">$6–$30</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">VPS + optional managed K8s. Canine itself is free.</p>
+      </div>
+    </div>
+
+    <!-- Setup -->
+    <div class="card" style="margin-top:16px">
+      <h3>Complete setup · Canine</h3>
+      <div class="tl-row">
+        <div class="tl-num">1</div>
+        <div class="tl-content">
+          <div class="tl-title">Provision a Kubernetes cluster</div>
+          <div class="tl-desc">Use k3s for simplicity, or a managed cluster from DO/AWS/GCP.</div>
+          <pre class="code"><span class="c"># Install k3s on your server (fastest option)</span>
+curl -sfL https://get.k3s.io | sh -
+<span class="c"># Get your kubeconfig</span>
+cat /etc/rancher/k3s/k3s.yaml</pre>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">2</div>
+        <div class="tl-content">
+          <div class="tl-title">Install Docker & Compose, then clone Canine</div>
+          <pre class="code">curl -fsSL https://get.docker.com | sh
+git clone https://github.com/CanineHQ/canine.git
+cd canine && cp .env.example .env</pre>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">3</div>
+        <div class="tl-content">
+          <div class="tl-title">Launch Canine & connect cluster</div>
+          <pre class="code">docker compose up -d
+<span class="c"># Open http://your-ip:3000 → Sign up → Paste kubeconfig</span></pre>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">4</div>
+        <div class="tl-content">
+          <div class="tl-title">Connect GitHub and deploy</div>
+          <div class="tl-desc">In UI: Settings → Integrations → GitHub → Authorize. Then "New App" from repo.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Demo -->
+    <div class="card" style="margin-top:16px">
+      <h3>Live demo · Canine · 5-step walkthrough</h3>
+      <p style="color:var(--text-dim);font-size:13px;margin-top:6px">Click any step, or use the Next button, to see how you actually deploy an app on Canine.</p>
+
+      <div class="wt-rail" data-rail="1">
+        <div class="wt-step active" data-wt-step="1"><div class="wn">1</div><div class="wt">Connect K8s</div><div class="wd">Paste kubeconfig</div></div>
+        <div class="wt-step" data-wt-step="2"><div class="wn">2</div><div class="wt">Link GitHub</div><div class="wd">OAuth auth</div></div>
+        <div class="wt-step" data-wt-step="3"><div class="wn">3</div><div class="wt">New App</div><div class="wd">Pick repo</div></div>
+        <div class="wt-step" data-wt-step="4"><div class="wn">4</div><div class="wt">Configure</div><div class="wd">Resources, domain</div></div>
+        <div class="wt-step" data-wt-step="5"><div class="wn">5</div><div class="wt">Live 🎉</div><div class="wd">Pod dashboard</div></div>
+      </div>
+
+      <div class="wt-scene" data-scene="1">
+        <!-- Step 1 -->
+        <div class="wt-panel show" data-wt-panel="1">
+          <div class="wt-h">1 · Connect your Kubernetes cluster</div>
+          <div class="wt-p">After installing Canine with <code>docker compose up -d</code>, the first thing it asks is: "where's your cluster?" Paste the kubeconfig from your k3s/EKS/GKE install.</div>
+          <div class="wt-row">
+            <div>
+              <div class="wt-label">Cluster name</div>
+              <div class="wt-field">production-k3s</div>
+            </div>
+            <div>
+              <div class="wt-label">API Server</div>
+              <div class="wt-field">https://134.209.12.48:6443</div>
+            </div>
+          </div>
+          <div style="margin-top:10px">
+            <div class="wt-label">Paste kubeconfig YAML</div>
+            <pre class="code" style="margin-top:4px">apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    server: https://134.209.12.48:6443
+    certificate-authority-data: LS0tLS1CRUd...●●●●●
+users:
+- name: admin
+  user:
+    token: eyJhbGciOiJSUzI1NiIs●●●●●</pre>
+          </div>
+          <div style="padding:10px;border-radius:10px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);color:var(--success);font-size:13px;margin-top:10px">✓ Cluster reachable · 1 node detected · ready</div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="wt-panel" data-wt-panel="2">
+          <div class="wt-h">2 · Link your GitHub</div>
+          <div class="wt-p">Settings → Integrations → GitHub → Authorize. Canine only gets access to the repos you select.</div>
+          <div style="padding:16px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2)">
+            <div style="font-weight:600;margin-bottom:10px">🐙 Install Canine on GitHub</div>
+            <div style="display:grid;gap:8px">
+              <label style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface);border-radius:8px;border:1px solid var(--border)"><input type="checkbox" checked /> All repositories</label>
+              <label style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface);border-radius:8px;border:1px solid var(--border);opacity:.65"><input type="checkbox" /> Only select repositories</label>
+            </div>
+            <div style="margin-top:12px;display:flex;justify-content:flex-end">
+              <button class="wt-btn primary" onclick="wtNext(1)">Install & Authorize →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="wt-panel" data-wt-panel="3">
+          <div class="wt-h">3 · Create a new app from a repo</div>
+          <div class="wt-p">Click "New App" → pick your repository. Canine auto-detects the Dockerfile.</div>
+          <div style="display:grid;gap:8px;margin-top:6px">
+            <div style="padding:12px;border:1px solid transparent;border-radius:10px;background:linear-gradient(135deg,rgba(124,92,255,.2),rgba(34,211,238,.14));display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:600">📦 vattanac / todo-app</div>
+                <div style="color:var(--text-dim);font-size:12px">main · Dockerfile found</div>
+              </div>
+              <span class="status-p"><span class="dot"></span>Selected</span>
+            </div>
+            <div style="padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);display:flex;justify-content:space-between;align-items:center;opacity:.7">
+              <div>
+                <div style="font-weight:600">📦 vattanac / blog-site</div>
+                <div style="color:var(--text-dim);font-size:12px">main · Static site</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="wt-panel" data-wt-panel="4">
+          <div class="wt-h">4 · Configure deployment settings</div>
+          <div class="wt-p">Set resources, domain, and env vars. Canine turns these into valid K8s manifests behind the scenes.</div>
+          <div class="wt-row">
+            <div><div class="wt-label">App name</div><div class="wt-field">todo-app</div></div>
+            <div><div class="wt-label">Port</div><div class="wt-field">3000</div></div>
+            <div><div class="wt-label">Replicas</div><div class="wt-field">2</div></div>
+            <div><div class="wt-label">Resources</div><div class="wt-field">500m CPU · 256Mi RAM</div></div>
+            <div><div class="wt-label">Domain</div><div class="wt-field">todo.mydomain.com · <span style="color:var(--success)">SSL ✓</span></div></div>
+            <div><div class="wt-label">Namespace</div><div class="wt-field">default</div></div>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="wt-panel" data-wt-panel="5">
+          <div class="wt-h">5 · Your app is live on Kubernetes 🎉</div>
+          <div class="wt-p">Canine generated the Deployment + Service + Ingress, issued TLS, and rolled it out.</div>
+          <div class="demo-frame">
+            <div class="browser-bar">
+              <div class="dots"><span></span><span></span><span></span></div>
+              <div class="url">🔒 canine.yourco.dev / apps / todo-app</div>
+            </div>
+            <div class="demo-body">
+              <div class="dash">
+                <aside class="side">
+                  <div style="font-weight:700;padding:4px 10px 10px">🐶 Canine</div>
+                  <div class="item active"><i></i>Apps</div>
+                  <div class="item"><i></i>Clusters</div>
+                  <div class="item"><i></i>Secrets</div>
+                  <div class="item"><i></i>Logs</div>
+                </aside>
+                <main class="mainp">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div><div style="font-weight:700;font-size:15px">todo-app</div><div style="color:var(--text-dim);font-size:12px">pod: todo-6d9b8 · ns: default</div></div>
+                    <span class="status-p"><span class="dot"></span>Running</span>
+                  </div>
+                  <div class="grid-3">
+                    <div class="mini"><div class="lbl">Replicas</div><div class="val">2/2</div></div>
+                    <div class="mini"><div class="lbl">CPU</div><div class="val">12%</div></div>
+                    <div class="mini"><div class="lbl">Memory</div><div class="val">84 MB</div></div>
+                  </div>
+                  <div class="logs" id="logs-1"></div>
+                </main>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wt-controls">
+          <button class="wt-btn" onclick="wtPrev(1)">← Back</button>
+          <button class="wt-btn primary" onclick="wtNext(1)">Next step →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pros/Cons -->
+    <div class="pc-grid">
+      <div class="pc-card pc-good">
+        <div class="ttl">👍 Advantages</div>
+        <ul>
+          <li>Full Kubernetes power — scales to massive workloads</li>
+          <li>Real multi-tenant with SAML/OIDC/LDAP SSO</li>
+          <li>Native K8s secrets, persistent volumes, GPUs</li>
+          <li>Open source (Apache 2.0) — no vendor lock-in</li>
+          <li>Teams already using K8s get huge productivity boost</li>
+        </ul>
+      </div>
+      <div class="pc-card pc-bad">
+        <div class="ttl">👎 Disadvantages</div>
+        <ul>
+          <li>Requires you to run & maintain a K8s cluster</li>
+          <li>Highest learning curve of the 4 options</li>
+          <li>More moving parts = more security surface</li>
+          <li>Overkill for 1–5 small apps</li>
+          <li>Setup has more steps than Coolify/Dokploy</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- When to use -->
+    <div class="use-card">
+      <div class="ttl" style="color:var(--c1-2)">🎯 When to use Canine</div>
+      <div class="use-list">
+        <div class="use-item"><strong>Your company already runs Kubernetes.</strong> You want a nicer dev experience without abandoning the platform.</div>
+        <div class="use-item"><strong>Multiple teams</strong> share a cluster and need SSO, RBAC, and tenant isolation.</div>
+        <div class="use-item"><strong>Apps need GPUs</strong>, stateful workloads, or fine-grained resource control.</div>
+        <div class="use-item"><strong>Enterprise security</strong> requirements (SAML, OIDC, audit logs) are non-negotiable.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== OPTION 2: COOLIFY =============================== -->
+  <section class="opt-section" data-opt="2" id="option2">
+    <div class="opt-hero" data-opt="2">
+      <div class="opt-num" style="font-size:12px;color:var(--text-dim);letter-spacing:.6px;text-transform:uppercase;font-weight:600">Option 2 · Most popular self-hosted</div>
+      <h2>⚡ Coolify</h2>
+      <p>An open-source Heroku/Vercel/Netlify alternative you run on your own server. Uses plain Docker (no Kubernetes complexity), has a huge one-click service library, and a thriving community. The sweet spot for most self-hosters in 2026.</p>
+    </div>
+
+    <div class="bento">
+      <div class="card span-4">
+        <h3>Underlying engine</h3>
+        <div class="big">Docker</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Optionally scales up to Docker Swarm for multi-server. No K8s needed.</p>
+      </div>
+      <div class="card span-4">
+        <h3>Setup time</h3>
+        <div class="big">~5 min</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">One-liner install. Fastest self-hosted option.</p>
+      </div>
+      <div class="card span-4">
+        <h3>Monthly cost</h3>
+        <div class="big">$6–$20</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Just a small VPS. Coolify is free forever.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Complete setup · Coolify</h3>
+      <div class="tl-row">
+        <div class="tl-num">1</div>
+        <div class="tl-content">
+          <div class="tl-title">Get a VPS & SSH as root</div>
+          <div class="tl-desc">Ubuntu 22.04+ with 2GB RAM. Any provider (Hetzner, DigitalOcean, Linode).</div>
+          <pre class="code">ssh root@your-server-ip</pre>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">2</div>
+        <div class="tl-content">
+          <div class="tl-title">Run the one-liner installer</div>
+          <pre class="code"><span class="c"># That's literally it 🎩</span>
+curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash</pre>
+          <p style="color:var(--text-dim);font-size:12.5px;margin-top:6px">Installs Docker, Postgres, Redis, Traefik, and Coolify itself automatically.</p>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">3</div>
+        <div class="tl-content">
+          <div class="tl-title">Open UI & create admin</div>
+          <div class="tl-desc">Visit <code>http://your-ip:8000</code>. Create account. First user becomes admin.</div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">4</div>
+        <div class="tl-content">
+          <div class="tl-title">Deploy your first app</div>
+          <div class="tl-desc">Add Resource → pick Git repo OR one-click service (WordPress, Ghost, n8n, Umami…)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Live demo · Coolify · 5-step walkthrough</h3>
+      <p style="color:var(--text-dim);font-size:13px;margin-top:6px">Deploy a URL shortener called "Snip.link" with Postgres — click through each step.</p>
+
+      <div class="wt-rail" data-rail="2">
+        <div class="wt-step active" data-wt-step="1"><div class="wn">1</div><div class="wt">Add Server</div><div class="wd">SSH key</div></div>
+        <div class="wt-step" data-wt-step="2"><div class="wn">2</div><div class="wt">New Project</div><div class="wd">Workspace</div></div>
+        <div class="wt-step" data-wt-step="3"><div class="wn">3</div><div class="wt">Pick Service</div><div class="wd">280+ templates</div></div>
+        <div class="wt-step" data-wt-step="4"><div class="wn">4</div><div class="wt">Deploy App</div><div class="wd">Link repo</div></div>
+        <div class="wt-step" data-wt-step="5"><div class="wn">5</div><div class="wt">Live 🎉</div><div class="wd">Production</div></div>
+      </div>
+
+      <div class="wt-scene" data-scene="2">
+        <!-- Step 1 -->
+        <div class="wt-panel show" data-wt-panel="1">
+          <div class="wt-h">1 · Add your server</div>
+          <div class="wt-p">After the one-liner install, add the VPS you want Coolify to deploy to. Just paste an SSH key — Coolify tests the connection automatically.</div>
+          <div class="wt-row">
+            <div><div class="wt-label">Server name</div><div class="wt-field">production-vps</div></div>
+            <div><div class="wt-label">IP address</div><div class="wt-field">134.209.12.48</div></div>
+          </div>
+          <div style="margin-top:10px">
+            <div class="wt-label">SSH private key</div>
+            <div class="wt-field" style="font-family:ui-monospace,monospace;font-size:12px">-----BEGIN OPENSSH PRIVATE KEY-----<br/>●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●</div>
+          </div>
+          <div style="padding:10px;border-radius:10px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);color:var(--success);font-size:13px;margin-top:10px">✓ Connection verified · Docker detected · ready</div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="wt-panel" data-wt-panel="2">
+          <div class="wt-h">2 · Create a project</div>
+          <div class="wt-p">Projects group related services (app + DB + cache). Everything inside shares env vars — no repeated configuration.</div>
+          <div><div class="wt-label">Project name</div><div class="wt-field">snip-link-production</div></div>
+          <div style="margin-top:10px"><div class="wt-label">Environment</div>
+            <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+              <div style="padding:7px 14px;border-radius:8px;background:linear-gradient(135deg,var(--c2),var(--c2-2));color:#06060c;font-weight:600;font-size:12.5px">production</div>
+              <div style="padding:7px 14px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim);font-size:12.5px">staging</div>
+              <div style="padding:7px 14px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim);font-size:12.5px">development</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="wt-panel" data-wt-panel="3">
+          <div class="wt-h">3 · Pick from 280+ one-click services</div>
+          <div class="wt-p">Need a database? Cache? CMS? Analytics? One click. Coolify provisions, configures, and connects it.</div>
+          <div class="svc-grid">
+            <div class="svc-cell picked"><div class="ic">🐘</div>PostgreSQL</div>
+            <div class="svc-cell"><div class="ic">🔴</div>Redis</div>
+            <div class="svc-cell"><div class="ic">🍃</div>MongoDB</div>
+            <div class="svc-cell"><div class="ic">📊</div>Umami</div>
+            <div class="svc-cell"><div class="ic">👻</div>Ghost</div>
+            <div class="svc-cell"><div class="ic">📝</div>WordPress</div>
+            <div class="svc-cell"><div class="ic">☁️</div>MinIO</div>
+            <div class="svc-cell"><div class="ic">🔗</div>n8n</div>
+          </div>
+          <div style="padding:10px;border-radius:10px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);color:var(--c2);font-size:13px;margin-top:12px">✓ Postgres provisioned · DATABASE_URL auto-created</div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="wt-panel" data-wt-panel="4">
+          <div class="wt-h">4 · Deploy your app from Git</div>
+          <div class="wt-p">Paste the GitHub URL. Coolify auto-detects Dockerfile/buildpack and injects env vars from the project.</div>
+          <div class="wt-row">
+            <div><div class="wt-label">Repository</div><div class="wt-field" style="font-family:ui-monospace,monospace;font-size:12.5px">github.com/vattanac/snip-link</div></div>
+            <div><div class="wt-label">Branch</div><div class="wt-field">main</div></div>
+            <div><div class="wt-label">Build method</div><div class="wt-field">Dockerfile (auto ✓)</div></div>
+            <div><div class="wt-label">Domain</div><div class="wt-field">snip.link · <span style="color:var(--success)">SSL auto ✓</span></div></div>
+          </div>
+          <div style="margin-top:10px">
+            <div class="wt-label">Env vars (inherited from project)</div>
+            <pre class="code">DATABASE_URL=<span class="s">{{ postgresql.url }}</span>  <span class="c"># auto-linked</span>
+NODE_ENV=production</pre>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="wt-panel" data-wt-panel="5">
+          <div class="wt-h">5 · Snip.link is live! 🎉</div>
+          <div class="wt-p">Coolify built the image, linked it to Postgres, issued SSL, and published. All while you drank your coffee.</div>
+          <div class="demo-frame">
+            <div class="browser-bar">
+              <div class="dots"><span></span><span></span><span></span></div>
+              <div class="url">🔒 coolify.yourco.dev / project / snip-link</div>
+            </div>
+            <div class="demo-body">
+              <div class="dash">
+                <aside class="side">
+                  <div style="font-weight:700;padding:4px 10px 10px">⚡ Coolify</div>
+                  <div class="item active"><i></i>Projects</div>
+                  <div class="item"><i></i>Servers</div>
+                  <div class="item"><i></i>Services</div>
+                  <div class="item"><i></i>Backups</div>
+                </aside>
+                <main class="mainp">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div><div style="font-weight:700;font-size:15px">snip-link</div><div style="color:var(--text-dim);font-size:12px">snip.link · linked to postgresql</div></div>
+                    <span class="status-p"><span class="dot"></span>Healthy</span>
+                  </div>
+                  <div class="grid-3">
+                    <div class="mini"><div class="lbl">CPU</div><div class="val">8%</div></div>
+                    <div class="mini"><div class="lbl">Mem</div><div class="val">62 MB</div></div>
+                    <div class="mini"><div class="lbl">Backups</div><div class="val">Daily ✓</div></div>
+                  </div>
+                  <div class="logs" id="logs-2"></div>
+                </main>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wt-controls">
+          <button class="wt-btn" onclick="wtPrev(2)">← Back</button>
+          <button class="wt-btn primary" onclick="wtNext(2)">Next step →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pc-grid">
+      <div class="pc-card pc-good">
+        <div class="ttl">👍 Advantages</div>
+        <ul>
+          <li>5-minute install, no Kubernetes needed</li>
+          <li>280+ one-click services (WordPress, Ghost, analytics, DBs)</li>
+          <li>Massive active community & docs</li>
+          <li>Auto SSL, auto backups, auto Git deploys</li>
+          <li>Clone apps with one button — no repeated config</li>
+          <li>Works on any $6 VPS</li>
+        </ul>
+      </div>
+      <div class="pc-card pc-bad">
+        <div class="ttl">👎 Disadvantages</div>
+        <ul>
+          <li>Single-server by default (multi-server needs Swarm)</li>
+          <li>Less powerful than full K8s at scale</li>
+          <li>Still a self-host responsibility (patching, backups)</li>
+          <li>Can feel opinionated if you want deep customization</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="use-card">
+      <div class="ttl" style="color:var(--c2-2)">🎯 When to use Coolify</div>
+      <div class="use-list">
+        <div class="use-item"><strong>Indie hackers & solo devs</strong> deploying personal projects, SaaS MVPs, side hustles.</div>
+        <div class="use-item"><strong>Small teams</strong> (1–10 people) wanting Heroku-like DX without the cost.</div>
+        <div class="use-item"><strong>Agencies</strong> hosting many small client sites on one server.</div>
+        <div class="use-item"><strong>Self-host enthusiasts</strong> running Ghost, Plausible, WordPress, n8n on a home lab.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== OPTION 3: DOKPLOY =============================== -->
+  <section class="opt-section" data-opt="3" id="option3">
+    <div class="opt-hero" data-opt="3">
+      <div class="opt-num" style="font-size:12px;color:var(--text-dim);letter-spacing:.6px;text-transform:uppercase;font-weight:600">Option 3 · Best modern UX</div>
+      <h2>🦕 Dokploy</h2>
+      <p>A newer entrant (launched 2024, hit stride in 2026) that prioritizes polished design and developer experience. Built on Docker Swarm for easy multi-server scaling. Think "Coolify but with a snappier UI and tighter scope".</p>
+    </div>
+
+    <div class="bento">
+      <div class="card span-4">
+        <h3>Underlying engine</h3>
+        <div class="big">Docker Swarm</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Multi-server ready out of the box. Simpler than K8s.</p>
+      </div>
+      <div class="card span-4">
+        <h3>Setup time</h3>
+        <div class="big">~5 min</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Single install script. Works on any Docker-capable host.</p>
+      </div>
+      <div class="card span-4">
+        <h3>Monthly cost</h3>
+        <div class="big">$6–$20</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Open source (MIT). Optional paid cloud also exists.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Complete setup · Dokploy</h3>
+      <div class="tl-row">
+        <div class="tl-num">1</div>
+        <div class="tl-content">
+          <div class="tl-title">Spin up a VPS</div>
+          <div class="tl-desc">Ubuntu 20.04+ with 2GB+ RAM. Ports 80, 443, and 3000 open.</div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">2</div>
+        <div class="tl-content">
+          <div class="tl-title">Run the official installer</div>
+          <pre class="code"><span class="c"># Single command</span>
+curl -sSL https://dokploy.com/install.sh | sh</pre>
+          <p style="color:var(--text-dim);font-size:12.5px;margin-top:6px">Installs Docker, configures Swarm mode, sets up Traefik + Dokploy UI.</p>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">3</div>
+        <div class="tl-content">
+          <div class="tl-title">Access the UI</div>
+          <div class="tl-desc">Go to <code>http://your-ip:3000</code> → create admin account → you're in.</div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">4</div>
+        <div class="tl-content">
+          <div class="tl-title">Connect Git & deploy</div>
+          <div class="tl-desc">Projects → Create App → GitHub / GitLab / Docker Hub → Auto-deploy on push.</div>
+          <pre class="code"><span class="c"># Or use templates for one-click deploys:</span>
+<span class="c"># Supabase, MinIO, Ghost, Plausible, etc.</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Live demo · Dokploy · 5-step walkthrough</h3>
+      <p style="color:var(--text-dim);font-size:13px;margin-top:6px">Deploy to a Docker Swarm cluster with multi-node scaling — click through each step.</p>
+
+      <div class="wt-rail" data-rail="3">
+        <div class="wt-step active" data-wt-step="1"><div class="wn">1</div><div class="wt">Init Swarm</div><div class="wd">Swarm mode</div></div>
+        <div class="wt-step" data-wt-step="2"><div class="wn">2</div><div class="wt">Templates</div><div class="wd">Pick stack</div></div>
+        <div class="wt-step" data-wt-step="3"><div class="wn">3</div><div class="wt">Scale</div><div class="wd">Replica count</div></div>
+        <div class="wt-step" data-wt-step="4"><div class="wn">4</div><div class="wt">Traefik</div><div class="wd">Route + SSL</div></div>
+        <div class="wt-step" data-wt-step="5"><div class="wn">5</div><div class="wt">Monitor 🎉</div><div class="wd">Live metrics</div></div>
+      </div>
+
+      <div class="wt-scene" data-scene="3">
+        <!-- Step 1 -->
+        <div class="wt-panel show" data-wt-panel="1">
+          <div class="wt-h">1 · Initialize Docker Swarm</div>
+          <div class="wt-p">After Dokploy's one-line installer, your server is automatically in Swarm mode. Add more nodes anytime with a single join command.</div>
+          <pre class="code"><span class="c"># Dokploy auto-ran this during install:</span>
+docker swarm init --advertise-addr 134.209.12.48
+
+<span class="c"># To add more nodes later:</span>
+docker swarm join --token SWMTKN-●●●●●● 134.209.12.48:2377</pre>
+          <div style="padding:10px;border-radius:10px;background:rgba(244,114,182,.08);border:1px solid rgba(244,114,182,.25);color:var(--c3);font-size:13px;margin-top:10px">✓ Swarm active · 1 manager · ready to accept workers</div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="wt-panel" data-wt-panel="2">
+          <div class="wt-h">2 · Pick a template (or paste a compose file)</div>
+          <div class="wt-p">Dokploy ships with curated templates for popular stacks. Or paste your own <code>docker-compose.yml</code> and it deploys as-is.</div>
+          <div class="svc-grid">
+            <div class="svc-cell picked"><div class="ic">🧰</div>Supabase</div>
+            <div class="svc-cell"><div class="ic">🔗</div>n8n</div>
+            <div class="svc-cell"><div class="ic">👻</div>Ghost</div>
+            <div class="svc-cell"><div class="ic">📊</div>Plausible</div>
+            <div class="svc-cell"><div class="ic">☁️</div>MinIO</div>
+            <div class="svc-cell"><div class="ic">📝</div>Outline</div>
+            <div class="svc-cell"><div class="ic">💬</div>Rocket.Chat</div>
+            <div class="svc-cell"><div class="ic">🐘</div>Postgres</div>
+          </div>
+          <div style="padding:10px;border-radius:10px;background:rgba(244,114,182,.08);border:1px solid rgba(244,114,182,.25);color:var(--c3);font-size:13px;margin-top:12px">✓ Supabase stack selected · 4 services will deploy</div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="wt-panel" data-wt-panel="3">
+          <div class="wt-h">3 · Scale across nodes</div>
+          <div class="wt-p">This is Dokploy's superpower — visual replica control across your Swarm. Drag a slider, Dokploy handles distribution.</div>
+          <div class="wt-row">
+            <div><div class="wt-label">Service name</div><div class="wt-field">snip-link</div></div>
+            <div><div class="wt-label">Replicas</div><div class="wt-field">3 (across 2 nodes)</div></div>
+            <div><div class="wt-label">Update strategy</div><div class="wt-field">Rolling · 1 at a time</div></div>
+            <div><div class="wt-label">Placement</div><div class="wt-field">Spread across zones</div></div>
+          </div>
+          <div style="margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2)">
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">NODE DISTRIBUTION</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <div style="flex:1;min-width:120px;padding:10px;border-radius:8px;background:linear-gradient(135deg,rgba(244,114,182,.2),rgba(251,113,133,.1));border:1px solid rgba(244,114,182,.25)"><div style="font-weight:600;font-size:13px">node-prod-1</div><div style="color:var(--text-dim);font-size:12px">2 replicas</div></div>
+              <div style="flex:1;min-width:120px;padding:10px;border-radius:8px;background:linear-gradient(135deg,rgba(244,114,182,.2),rgba(251,113,133,.1));border:1px solid rgba(244,114,182,.25)"><div style="font-weight:600;font-size:13px">node-prod-2</div><div style="color:var(--text-dim);font-size:12px">1 replica</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="wt-panel" data-wt-panel="4">
+          <div class="wt-h">4 · Traefik routes & SSL automatically</div>
+          <div class="wt-p">Every service you deploy gets a Traefik route, load balancing, and a Let's Encrypt cert — without any config file.</div>
+          <div class="wt-row">
+            <div><div class="wt-label">Domain</div><div class="wt-field">snip.link</div></div>
+            <div><div class="wt-label">Port</div><div class="wt-field">3000 → 443</div></div>
+            <div><div class="wt-label">SSL</div><div class="wt-field" style="color:var(--success)">✓ Let's Encrypt auto</div></div>
+            <div><div class="wt-label">Load balancing</div><div class="wt-field">Round-robin across 3 replicas</div></div>
+          </div>
+          <pre class="code" style="margin-top:10px"><span class="c"># Traefik labels Dokploy sets for you:</span>
+traefik.enable=true
+traefik.http.routers.snip.rule=Host(<span class="s">`snip.link`</span>)
+traefik.http.routers.snip.tls.certresolver=letsencrypt</pre>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="wt-panel" data-wt-panel="5">
+          <div class="wt-h">5 · Real-time monitoring dashboard 🎉</div>
+          <div class="wt-p">Dokploy ships with live metrics per-node and per-replica. Nothing else to install.</div>
+          <div class="demo-frame">
+            <div class="browser-bar">
+              <div class="dots"><span></span><span></span><span></span></div>
+              <div class="url">🔒 dokploy.yourco.dev / project / snip-link</div>
+            </div>
+            <div class="demo-body">
+              <div class="dash">
+                <aside class="side">
+                  <div style="font-weight:700;padding:4px 10px 10px">🦕 Dokploy</div>
+                  <div class="item active"><i></i>Projects</div>
+                  <div class="item"><i></i>Templates</div>
+                  <div class="item"><i></i>Nodes</div>
+                  <div class="item"><i></i>Monitoring</div>
+                </aside>
+                <main class="mainp">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div><div style="font-weight:700;font-size:15px">snip-link</div><div style="color:var(--text-dim);font-size:12px">3 replicas · 2 nodes · swarm</div></div>
+                    <span class="status-p"><span class="dot"></span>Running</span>
+                  </div>
+                  <div class="grid-3">
+                    <div class="mini"><div class="lbl">Replicas</div><div class="val">3/3</div></div>
+                    <div class="mini"><div class="lbl">Nodes</div><div class="val">2</div></div>
+                    <div class="mini"><div class="lbl">RPS</div><div class="val">142</div></div>
+                  </div>
+                  <div class="logs" id="logs-3"></div>
+                </main>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wt-controls">
+          <button class="wt-btn" onclick="wtPrev(3)">← Back</button>
+          <button class="wt-btn primary" onclick="wtNext(3)">Next step →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pc-grid">
+      <div class="pc-card pc-good">
+        <div class="ttl">👍 Advantages</div>
+        <ul>
+          <li>Cleanest UI of the 4 — very modern design</li>
+          <li>Built-in Docker Swarm = easy multi-server scaling</li>
+          <li>Real-time monitoring dashboards built in</li>
+          <li>Built-in Traefik (no separate reverse proxy to configure)</li>
+          <li>Templates for popular stacks (Supabase, n8n, etc.)</li>
+          <li>Active development, modern tech stack (TypeScript)</li>
+        </ul>
+      </div>
+      <div class="pc-card pc-bad">
+        <div class="ttl">👎 Disadvantages</div>
+        <ul>
+          <li>Younger project — smaller community than Coolify</li>
+          <li>Fewer plugins & one-click services than Coolify</li>
+          <li>Docker Swarm is less battle-tested at massive scale</li>
+          <li>Some rough edges still being polished in 2026</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="use-card">
+      <div class="ttl" style="color:var(--c3-2)">🎯 When to use Dokploy</div>
+      <div class="use-list">
+        <div class="use-item"><strong>You care about UI polish</strong> and want the most modern-looking dashboard.</div>
+        <div class="use-item"><strong>Multi-server needed early</strong> — Swarm is easier than K8s for 2–5 nodes.</div>
+        <div class="use-item"><strong>Startups</strong> wanting a clean slate and modern tooling.</div>
+        <div class="use-item"><strong>Docker Compose power users</strong> who want a UI wrapper without K8s.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== OPTION 4: RAILWAY =============================== -->
+  <section class="opt-section" data-opt="4" id="option4">
+    <div class="opt-hero" data-opt="4">
+      <div class="opt-num" style="font-size:12px;color:var(--text-dim);letter-spacing:.6px;text-transform:uppercase;font-weight:600">Option 4 · Zero maintenance</div>
+      <h2>🚂 Railway</h2>
+      <p>A fully-managed cloud platform. You don't touch a server, ever. Push code to Git, Railway builds and deploys it. The fastest path from idea to production — you pay with dollars instead of hours.</p>
+    </div>
+
+    <div class="bento">
+      <div class="card span-4">
+        <h3>Underlying engine</h3>
+        <div class="big">Managed cloud</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Runs on Railway's infrastructure. You never see a server.</p>
+      </div>
+      <div class="card span-4">
+        <h3>Setup time</h3>
+        <div class="big">~1 min</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Sign up → connect GitHub → deploy. Seriously.</p>
+      </div>
+      <div class="card span-4">
+        <h3>Monthly cost</h3>
+        <div class="big">$5+</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Pay-as-you-go. Small apps ~$5–$10/mo. Scales with usage.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Complete setup · Railway</h3>
+      <div class="tl-row">
+        <div class="tl-num">1</div>
+        <div class="tl-content">
+          <div class="tl-title">Sign up at railway.com</div>
+          <div class="tl-desc">Sign in with GitHub. No credit card for first $5 trial.</div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">2</div>
+        <div class="tl-content">
+          <div class="tl-title">New Project → Deploy from GitHub</div>
+          <div class="tl-desc">Pick any repo. Railway auto-detects language/framework (Node, Python, Go, Rust…).</div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">3</div>
+        <div class="tl-content">
+          <div class="tl-title">Add services with templates</div>
+          <pre class="code"><span class="c"># Click "+ New" → choose:</span>
+  - PostgreSQL (one click, auto-linked)
+  - Redis (one click)
+  - 50+ official templates available</pre>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-num">4</div>
+        <div class="tl-content">
+          <div class="tl-title">Push to git = auto deploy</div>
+          <div class="tl-desc">Railway watches your repo. Every push triggers a build + deploy. Zero server management forever.</div>
+          <pre class="code">git push origin main
+<span class="c"># → Railway builds & deploys automatically 🚂</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Live demo · Railway · 5-step walkthrough</h3>
+      <p style="color:var(--text-dim);font-size:13px;margin-top:6px">Fastest option: idea → production in ~60 seconds. No servers, no YAML.</p>
+
+      <div class="wt-rail" data-rail="4">
+        <div class="wt-step active" data-wt-step="1"><div class="wn">1</div><div class="wt">Sign In</div><div class="wd">GitHub OAuth</div></div>
+        <div class="wt-step" data-wt-step="2"><div class="wn">2</div><div class="wt">New Project</div><div class="wd">Deploy from repo</div></div>
+        <div class="wt-step" data-wt-step="3"><div class="wn">3</div><div class="wt">Add DB</div><div class="wd">One-click Postgres</div></div>
+        <div class="wt-step" data-wt-step="4"><div class="wn">4</div><div class="wt">Auto Deploy</div><div class="wd">Git push = deploy</div></div>
+        <div class="wt-step" data-wt-step="5"><div class="wn">5</div><div class="wt">Live 🎉</div><div class="wd">Usage-based billing</div></div>
+      </div>
+
+      <div class="wt-scene" data-scene="4">
+        <!-- Step 1 -->
+        <div class="wt-panel show" data-wt-panel="1">
+          <div class="wt-h">1 · Sign in with GitHub</div>
+          <div class="wt-p">No account creation forms, no passwords. Click "Continue with GitHub" and you're in.</div>
+          <div style="padding:30px;border-radius:14px;border:1px solid var(--border);background:var(--surface-2);text-align:center">
+            <div style="font-size:32px;margin-bottom:8px">🚂</div>
+            <div style="font-weight:800;font-size:22px;margin-bottom:4px">Welcome to Railway</div>
+            <div style="color:var(--text-dim);font-size:13px;margin-bottom:20px">Bring your ideas to life without the infrastructure headaches.</div>
+            <button class="wt-btn primary" style="padding:12px 24px;font-size:14px">🐙 Continue with GitHub →</button>
+            <div style="margin-top:14px;color:var(--text-dim);font-size:12px">$5 free trial credit · no credit card required</div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="wt-panel" data-wt-panel="2">
+          <div class="wt-h">2 · New Project → Deploy from GitHub repo</div>
+          <div class="wt-p">Railway auto-detects your language and framework. Node? Python? Go? Rust? All handled.</div>
+          <div style="display:grid;gap:8px">
+            <div style="padding:12px;border:1px solid transparent;border-radius:10px;background:linear-gradient(135deg,rgba(52,211,153,.2),rgba(96,165,250,.14));display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:600">📦 vattanac / snip-link</div>
+                <div style="color:var(--text-dim);font-size:12px">main · <span style="color:var(--success)">Nixpacks detected Node.js</span></div>
+              </div>
+              <span class="status-p"><span class="dot"></span>Selected</span>
+            </div>
+            <div style="padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);display:flex;justify-content:space-between;align-items:center;opacity:.7">
+              <div>
+                <div style="font-weight:600">📦 vattanac / api-gateway</div>
+                <div style="color:var(--text-dim);font-size:12px">main · Python 3.12</div>
+              </div>
+            </div>
+          </div>
+          <div style="padding:10px;border-radius:10px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);color:var(--success);font-size:13px;margin-top:12px">✓ Build will run automatically · no Dockerfile needed</div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="wt-panel" data-wt-panel="3">
+          <div class="wt-h">3 · Add a Postgres database (one click)</div>
+          <div class="wt-p">In the project canvas, click "+ New" → pick a database. Railway provisions and auto-injects <code>DATABASE_URL</code> into your app.</div>
+          <div class="svc-grid">
+            <div class="svc-cell picked"><div class="ic">🐘</div>PostgreSQL</div>
+            <div class="svc-cell"><div class="ic">🔴</div>Redis</div>
+            <div class="svc-cell"><div class="ic">🍃</div>MongoDB</div>
+            <div class="svc-cell"><div class="ic">🐬</div>MySQL</div>
+          </div>
+          <div style="padding:12px;border-radius:10px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);color:var(--success);font-size:13px;margin-top:12px">✓ Postgres created · variable <code style="color:inherit">DATABASE_URL</code> auto-linked to your app</div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="wt-panel" data-wt-panel="4">
+          <div class="wt-h">4 · Git push = auto deploy, forever</div>
+          <div class="wt-p">This is it. Every push to main triggers a build + deploy. You'll never open a terminal again unless you want to.</div>
+          <pre class="code"><span class="c"># Your normal workflow:</span>
+git add .
+git commit -m <span class="s">"add new feature"</span>
+git push origin main
+
+<span class="c"># Railway automatically:</span>
+<span class="c">#   → detects the push</span>
+<span class="c">#   → runs Nixpacks build</span>
+<span class="c">#   → deploys new version</span>
+<span class="c">#   → zero-downtime swap</span> 🚂</pre>
+          <div style="margin-top:10px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2)">
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">BUILD LOG (live)</div>
+            <div style="font-family:ui-monospace,monospace;font-size:12px;color:var(--text-dim)">
+              <div>[nixpacks] detected Node.js 20</div>
+              <div style="color:var(--success)"> ✓ build succeeded in 1m 12s</div>
+              <div>[deploy] starting container...</div>
+              <div style="color:var(--success)"> ✓ live at snip-link.up.railway.app</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="wt-panel" data-wt-panel="5">
+          <div class="wt-h">5 · Running in production 🎉</div>
+          <div class="wt-p">Usage-based billing means you only pay for what you actually use. Small apps cost a few dollars a month.</div>
+          <div class="demo-frame">
+            <div class="browser-bar">
+              <div class="dots"><span></span><span></span><span></span></div>
+              <div class="url">🔒 railway.com / project / snip-link</div>
+            </div>
+            <div class="demo-body">
+              <div class="dash">
+                <aside class="side">
+                  <div style="font-weight:700;padding:4px 10px 10px">🚂 Railway</div>
+                  <div class="item active"><i></i>Overview</div>
+                  <div class="item"><i></i>Deployments</div>
+                  <div class="item"><i></i>Variables</div>
+                  <div class="item"><i></i>Metrics</div>
+                </aside>
+                <main class="mainp">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div><div style="font-weight:700;font-size:15px">snip-link</div><div style="color:var(--text-dim);font-size:12px">snip-link-production.up.railway.app</div></div>
+                    <span class="status-p"><span class="dot"></span>Active</span>
+                  </div>
+                  <div class="grid-3">
+                    <div class="mini"><div class="lbl">Usage</div><div class="val">$3.21</div></div>
+                    <div class="mini"><div class="lbl">Region</div><div class="val">US-East</div></div>
+                    <div class="mini"><div class="lbl">Deploy</div><div class="val">2m ago</div></div>
+                  </div>
+                  <div class="logs" id="logs-4"></div>
+                </main>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wt-controls">
+          <button class="wt-btn" onclick="wtPrev(4)">← Back</button>
+          <button class="wt-btn primary" onclick="wtNext(4)">Next step →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pc-grid">
+      <div class="pc-card pc-good">
+        <div class="ttl">👍 Advantages</div>
+        <ul>
+          <li>Zero server management — ever</li>
+          <li>Sign up to deployed in under 60 seconds</li>
+          <li>Auto-detects frameworks (no Dockerfile needed)</li>
+          <li>Built-in Postgres, Redis, MongoDB, etc.</li>
+          <li>Automatic scaling, backups, monitoring</li>
+          <li>Teams, collab, and rollback built in</li>
+          <li>Excellent developer experience</li>
+        </ul>
+      </div>
+      <div class="pc-card pc-bad">
+        <div class="ttl">👎 Disadvantages</div>
+        <ul>
+          <li>Not free — costs scale with usage</li>
+          <li>Vendor lock-in (moving off = redoing deployments)</li>
+          <li>Less control over low-level infrastructure</li>
+          <li>Data sovereignty / compliance concerns for some industries</li>
+          <li>Can get expensive at high scale vs. self-hosted</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="use-card">
+      <div class="ttl" style="color:var(--c4-2)">🎯 When to use Railway</div>
+      <div class="use-list">
+        <div class="use-item"><strong>Your time is worth more than money.</strong> You want to code, not sysadmin.</div>
+        <div class="use-item"><strong>Building an MVP or prototype</strong> that may fail fast — no infra commitment.</div>
+        <div class="use-item"><strong>Startups</strong> before they hit infrastructure cost efficiency ceilings.</div>
+        <div class="use-item"><strong>Tight deadline projects</strong> where setup time must be near zero.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== DECISION MATRIX =============================== -->
+  <section style="margin-top:70px">
+    <div class="badge"><span class="dot" style="background:#FBBF24;box-shadow:0 0 12px #FBBF24"></span> Final decision helper</div>
+    <h2 style="font-size:30px;margin:14px 0 8px;letter-spacing:-.02em">Side-by-side comparison 🎯</h2>
+    <p style="color:var(--text-dim)">All four options at a glance. Use this table to pick.</p>
+
+    <div class="card" style="margin-top:18px">
+      <div style="overflow-x:auto">
+        <table class="compare">
+          <thead>
+            <tr>
+              <th></th>
+              <th><span class="t-canine">🐶 Canine</span></th>
+              <th><span class="t-coolify">⚡ Coolify</span></th>
+              <th><span class="t-dokploy">🦕 Dokploy</span></th>
+              <th><span class="t-railway">🚂 Railway</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Engine</td>
+              <td>Kubernetes</td>
+              <td>Docker</td>
+              <td>Docker Swarm</td>
+              <td>Managed cloud</td>
+            </tr>
+            <tr>
+              <td>Setup time</td>
+              <td>~20 min</td>
+              <td>~5 min</td>
+              <td>~5 min</td>
+              <td>~1 min</td>
+            </tr>
+            <tr>
+              <td>Monthly cost</td>
+              <td>$6–$30</td>
+              <td>$6–$20</td>
+              <td>$6–$20</td>
+              <td>$5+ (usage-based)</td>
+            </tr>
+            <tr>
+              <td>Self-hosted?</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>No (cloud)</td>
+            </tr>
+            <tr>
+              <td>Difficulty</td>
+              <td>🟡 Medium-high</td>
+              <td>🟢 Easy</td>
+              <td>🟢 Easy</td>
+              <td>🟢🟢 Easiest</td>
+            </tr>
+            <tr>
+              <td>Multi-server</td>
+              <td>✅ Via K8s</td>
+              <td>⚠️ Needs Swarm</td>
+              <td>✅ Built-in</td>
+              <td>✅ Handled for you</td>
+            </tr>
+            <tr>
+              <td>One-click services</td>
+              <td>Limited</td>
+              <td>✅ 280+</td>
+              <td>✅ 50+</td>
+              <td>✅ 50+</td>
+            </tr>
+            <tr>
+              <td>Git auto-deploy</td>
+              <td>✅</td>
+              <td>✅</td>
+              <td>✅</td>
+              <td>✅</td>
+            </tr>
+            <tr>
+              <td>Auto SSL</td>
+              <td>✅</td>
+              <td>✅</td>
+              <td>✅</td>
+              <td>✅</td>
+            </tr>
+            <tr>
+              <td>SSO / Enterprise auth</td>
+              <td>✅ SAML / OIDC / LDAP</td>
+              <td>⚠️ Limited</td>
+              <td>⚠️ Basic</td>
+              <td>✅ Team plans</td>
+            </tr>
+            <tr>
+              <td>Vendor lock-in</td>
+              <td>None</td>
+              <td>None</td>
+              <td>None</td>
+              <td>High</td>
+            </tr>
+            <tr>
+              <td>Community size</td>
+              <td>Small-medium</td>
+              <td>Large</td>
+              <td>Growing</td>
+              <td>Huge</td>
+            </tr>
+            <tr>
+              <td>Best for</td>
+              <td><span class="t-canine">K8s teams / enterprise</span></td>
+              <td><span class="t-coolify">Indie devs / small teams</span></td>
+              <td><span class="t-dokploy">Modern-stack startups</span></td>
+              <td><span class="t-railway">Fastest shipping</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Quick pick -->
+    <div class="bento" style="margin-top:18px">
+      <div class="card span-3" style="border-color:rgba(124,92,255,.3)">
+        <h3 style="color:var(--c1)">🐶 Pick Canine if…</h3>
+        <p style="font-size:14px;line-height:1.6;margin-top:8px">You already know Kubernetes, need enterprise auth, or run workloads at scale. Pay with complexity, gain maximum power.</p>
+      </div>
+      <div class="card span-3" style="border-color:rgba(139,92,246,.3)">
+        <h3 style="color:var(--c2)">⚡ Pick Coolify if…</h3>
+        <p style="font-size:14px;line-height:1.6;margin-top:8px">You want the most-loved self-hosted PaaS with huge community support. Best all-rounder for 95% of people.</p>
+      </div>
+      <div class="card span-3" style="border-color:rgba(244,114,182,.3)">
+        <h3 style="color:var(--c3)">🦕 Pick Dokploy if…</h3>
+        <p style="font-size:14px;line-height:1.6;margin-top:8px">You love modern UI, want multi-server from day one without Kubernetes, and don't mind a younger community.</p>
+      </div>
+      <div class="card span-3" style="border-color:rgba(52,211,153,.3)">
+        <h3 style="color:var(--c4)">🚂 Pick Railway if…</h3>
+        <p style="font-size:14px;line-height:1.6;margin-top:8px">Your time is the scarce resource. Ship in 60 seconds, never touch a server, pay as you grow.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Sources: <a href="https://github.com/CanineHQ/canine" target="_blank">Canine</a> · <a href="https://coolify.io" target="_blank">Coolify</a> · <a href="https://dokploy.com" target="_blank">Dokploy</a> · <a href="https://railway.com" target="_blank">Railway</a> · Compiled April 2026
+  </footer>
+</div>
+
+<script>
+  function selectOption(n){
+    document.querySelectorAll('.opt-card').forEach(c => c.classList.toggle('active', +c.dataset.opt === n));
+    document.querySelectorAll('.opt-section').forEach(s => s.classList.toggle('show', +s.dataset.opt === n));
+    document.getElementById('option' + n).scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  // Support hash navigation
+  window.addEventListener('hashchange', () => {
+    const m = location.hash.match(/option(\d)/);
+    if(m) selectOption(+m[1]);
+  });
+  if(location.hash){
+    const m = location.hash.match(/option(\d)/);
+    if(m) selectOption(+m[1]);
+  }
+
+  // ====== Walkthrough engines (one per option) ======
+  const wtState = {1:1, 2:1, 3:1, 4:1};
+  const wtTotal = 5;
+  const wtLogsStarted = {1:false, 2:false, 3:false, 4:false};
+
+  const wtLogs = {
+    1: [
+      ['dim','[k8s] Creating Deployment/todo-app'],
+      ['ok',' ✓ pod todo-6d9b8 scheduled on node-1'],
+      ['dim','[k8s] Creating Service/todo-app'],
+      ['dim','[k8s] Creating Ingress/todo-app'],
+      ['dim','[cert-manager] requesting TLS cert...'],
+      ['ok',' ✓ TLS issued for todo.mydomain.com'],
+      ['ok',' ✓ 2 / 2 pods ready'],
+      ['dim','[access] GET /todos 200 4ms'],
+    ],
+    2: [
+      ['dim','[coolify] Dockerfile detected'],
+      ['ok',' ✓ Image built (34s)'],
+      ['dim','[network] linking to postgresql container'],
+      ['ok',' ✓ DATABASE_URL injected'],
+      ['dim','[traefik] router configured'],
+      ['ok',' ✓ SSL issued for snip.link'],
+      ['ok','[ready] 🎉 Live at https://snip.link'],
+      ['dim','[access] POST /api/shorten 200 12ms'],
+    ],
+    3: [
+      ['dim','[swarm] creating service snip-link'],
+      ['ok',' ✓ replica 1 started on node-prod-1'],
+      ['ok',' ✓ replica 2 started on node-prod-1'],
+      ['ok',' ✓ replica 3 started on node-prod-2'],
+      ['dim','[traefik] route configured'],
+      ['ok',' ✓ SSL cert active'],
+      ['ok','[ready] 3/3 replicas healthy'],
+      ['dim','[access] GET / 200 5ms'],
+    ],
+    4: [
+      ['dim','[nixpacks] detected Node.js 20'],
+      ['ok',' ✓ build succeeded (1m 12s)'],
+      ['dim','[deploy] starting container...'],
+      ['ok',' ✓ deployed to US-East edge'],
+      ['dim','[healthcheck] waiting for app...'],
+      ['ok',' ✓ health check passed'],
+      ['ok','[ready] 🚂 live at snip-link-production.up.railway.app'],
+      ['dim','[billing] usage $0.04/hr'],
+    ],
+  };
+
+  function wtRender(opt){
+    const section = document.querySelector('.opt-section[data-opt="' + opt + '"]');
+    if(!section) return;
+    const rail = section.querySelector('.wt-rail');
+    const scene = section.querySelector('.wt-scene');
+    if(!rail || !scene) return;
+    const cur = wtState[opt];
+    rail.querySelectorAll('.wt-step').forEach(s => s.classList.toggle('active', +s.dataset.wtStep === cur));
+    scene.querySelectorAll('.wt-panel').forEach(p => p.classList.toggle('show', +p.dataset.wtPanel === cur));
+    const prevBtn = scene.querySelector('.wt-controls .wt-btn:not(.primary)');
+    const nextBtn = scene.querySelector('.wt-controls .wt-btn.primary');
+    if(prevBtn) prevBtn.disabled = cur === 1;
+    if(nextBtn) nextBtn.textContent = cur === wtTotal ? 'Restart ↺' : 'Next step →';
+    if(cur === wtTotal) startWtLogs(opt);
+  }
+
+  function wtNext(opt){
+    wtState[opt] = wtState[opt] === wtTotal ? 1 : wtState[opt] + 1;
+    if(wtState[opt] === 1){ // restart resets logs
+      wtLogsStarted[opt] = false;
+      const el = document.getElementById('logs-' + opt);
+      if(el) el.innerHTML = '';
+    }
+    wtRender(opt);
+  }
+  function wtPrev(opt){
+    if(wtState[opt] > 1){ wtState[opt]--; wtRender(opt); }
+  }
+
+  function startWtLogs(opt){
+    if(wtLogsStarted[opt]) return;
+    wtLogsStarted[opt] = true;
+    const el = document.getElementById('logs-' + opt);
+    if(!el) return;
+    el.innerHTML = '';
+    const lines = wtLogs[opt];
+    let i = 0;
+    const tick = () => {
+      if(i >= lines.length) return;
+      const [cls, txt] = lines[i++];
+      const div = document.createElement('div');
+      div.style.color = cls === 'ok' ? '#34D399' : cls === 'wr' ? '#FBBF24' : '#64748b';
+      div.textContent = txt;
+      el.appendChild(div);
+      el.scrollTop = el.scrollHeight;
+      setTimeout(tick, 260);
+    };
+    tick();
+  }
+
+  // Attach click handlers to step pills
+  document.querySelectorAll('.wt-rail').forEach(rail => {
+    const opt = +rail.dataset.rail;
+    rail.querySelectorAll('.wt-step').forEach(s => {
+      s.addEventListener('click', () => {
+        wtState[opt] = +s.dataset.wtStep;
+        wtRender(opt);
+      });
+    });
+  });
+</script>
+</body>
+</html>
