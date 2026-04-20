@@ -1,5 +1,7 @@
 # Self-Hosted PaaS Guide
 
+🔗 **Live site:** [https://self-hosted-paas-guide.netlify.app/](https://self-hosted-paas-guide.netlify.app/)
+
 An interactive, single-page comparison of four deployment platforms — **Canine**, **Coolify**, **Dokploy**, and **Railway** — covering setup, cost, and a step-by-step live demo walkthrough for each.
 
 ## What's inside
